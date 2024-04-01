@@ -1,0 +1,27 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/mnt/spider/paragon'
+g++ -I./hudini -I./rembrandt -I./hipparchus   -c -o main.o main.cpp
+cd ./hudini && make all
+make[1]: Entering directory '/mnt/spider/paragon/hudini'
+gcc -Werror=all -c -o sender.o sender.c
+gcc -Werror=all -c -o receiver.o receiver.c
+ar rcs hudini.a sender.o receiver.o 
+make[1]: Leaving directory '/mnt/spider/paragon/hudini'
+cd ./hipparchus && make all
+make[1]: Entering directory '/mnt/spider/paragon/hipparchus'
+g++ -Werror=all -c -o hipparchus.o hipparchus.cpp
+ar rcs hipparchus.a hipparchus.o 
+make[1]: Leaving directory '/mnt/spider/paragon/hipparchus'
+cd ./rembrandt && make all
+make[1]: Entering directory '/mnt/spider/paragon/rembrandt'
+test -d ../bin || mkdir -p ../bin
+test -d objs || mkdir -p objs
+g++ -Wall -O  -c bmp.cpp -o objs/bmp.o
+g++ -Wall -O  -c sphere.cpp -o objs/sphere.o
+g++ -Wall -O  -c rembrandt.cpp -o objs/rembrandt.o
+g++ -Wall -O  -c point.cpp -o objs/point.o
+ar rcs rembrandt.a objs/bmp.o objs/sphere.o objs/rembrandt.o objs/point.o
+make[1]: Leaving directory '/mnt/spider/paragon/rembrandt'
+g++ -o paragon  main.o ./hudini/hudini.a ./hipparchus/hipparchus.a  ./rembrandt/rembrandt.a  ./hipparchus/lib/libchilkat-9.5.0.a -lglut -lGLU -lGL -lm
+make: Leaving directory '/mnt/spider/paragon'
+ 
