@@ -11,6 +11,7 @@
 
 #define TTL_MAX CHAR_MAX
 #define MAX_HOPS    30
+#define PORT_TO_WORLD 8000
 
 #define HUDINI_SUCC     0
 #define TTL_LIM_EXC     1

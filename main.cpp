@@ -89,14 +89,13 @@ u32 init_hudini(u32 argc, i8* argv[], struct _hudini_udp_ctx** uctx, struct _hud
 
     u32 status = 0;
     i8 *hostname = argv[1];
-    i16 portno  = atoi(argv[2]);
+    i16 portno  = PORT_TO_WORLD;
     i8 buffer[] = "Hello world\n";
 
-    if (argc < 3) {
+    if (argc < 2) {
         perror ("Too few arguments passed to Paragon");
         exit (TOOFEWARG);
     }
-
     status = init_UDP_ctx(uctx, hostname, strlen(hostname), portno);
     if (status != HUDINI_SUCC) {
         perror ("Hudini failed");
