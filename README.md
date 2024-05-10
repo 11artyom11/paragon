@@ -54,8 +54,7 @@ After running this command you will see globe window opened and similar picture.
 
 Watch a demo of Paragon in action:
 
-<iframe width="1280" height="720" src="https://www.youtube.com/embed/g8nxmpD6k4o?list=PLjf66Rt9-r37rsbuDZVyIzxcbgGjjmOgB" title="Paragon in air" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
+[![Paragon in air](https://img.youtube.com/vi/g8nxmpD6k4o/maxresdefault.jpg)](https://www.youtube.com/watch?v=g8nxmpD6k4o&list=PLjf66Rt9-r37rsbuDZVyIzxcbgGjjmOgB)
 
 
 ## Contributing
