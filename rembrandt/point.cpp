@@ -11,7 +11,7 @@ point::point (GLfloat x, GLfloat y, GLfloat z):
         y{y},
         z{z}
 {
-        std::cout << "called point ctor\n";
+        // std::cout << "called point ctor\n";
 }
 
 void point::draw_point(void)
@@ -31,6 +31,24 @@ void draw_bezier_3(const point& p1, const point& p2, const point& p3)
         p[1] = (1 - t) * (1 - t) * p1.gety() + 2 * (1 - t) * t * p2.gety() + t * t * p3.gety();
         p[2] = (1 - t) * (1 - t) * p1.getz() + 2 * (1 - t) * t * p2.getz() + t * t * p3.getz();
         glVertex3fv(p);
+    }
+    glEnd();
+}
+
+void draw_quadratic_curve(const point& p1, const point& p2, const point& p3) {
+    glBegin(GL_LINE_STRIP);
+    for (GLfloat i = 0; i <= anim; ++i) {
+        if (anim < 100) anim += 0.002f;
+        float t = (float)i / 100.0;
+        float u = 1 - t;
+        float tt = t * t;
+        float uu = u * u;
+
+        float x = uu * p1.getx() + 2 * u * t * p2.getx() + tt * p3.getx();
+        float y = uu * p1.gety() + 2 * u * t * p2.gety() + tt * p3.gety();
+        float z = uu * p1.getz() + 2 * u * t * p2.getz() + tt * p3.getz();
+
+        glVertex3f(x, y, z);
     }
     glEnd();
 }

@@ -40,7 +40,8 @@ sphere sphere2(1.0f, 36*2, 18*2, true,  2);    // radius, sectors, stacks, smoot
 std::string hostnames[30]; /* Magic 30 */
 std::vector<std::vector<double>> host_coords;
 int hostname_count;
-
+int magic_lat = -186;
+int magic_lon = 176;
 
 ///////////////////////////////////////////////////////////////////////////////
 int init_rembrandt_internal(int argc, char **argv, char* strlst[], int strcnt, const std::vector<std::vector<double>>& host_c)
@@ -64,7 +65,7 @@ int init_rembrandt_internal(int argc, char **argv, char* strlst[], int strcnt, c
 
     // load BMP image
     //texId = loadTexture("earth2048.bmp", true);
-    texId = loadTexture("earth2048.bmp", true);
+    texId = loadTexture("/mnt/spider/paragon/rembrandt/8081_earthmap4k.bmp", true);
 
     // the last GLUT call (LOOP)
     // window will be shown and display callback is triggered by events
@@ -130,7 +131,7 @@ void initGL()
 
     // track material ambient and diffuse from surface color, call it before glEnable(GL_COLOR_MATERIAL)
     // glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
+    // glEnable(GL_COLOR_MATERIAL);
 
     glClearColor(0, 0, 0, 0);                   // background color
     glClearStencil(0);                          // clear stencil buffer
@@ -383,7 +384,7 @@ void showInfo()
     for (size_t i = 0; i < hostname_count; ++i) {
         ss << hostnames[i] << std::ends;
         drawString(ss.str().c_str(), 1, screenHeight-((6+i)*TEXT_HEIGHT), color, font);
-        std::cout << hostnames[i] << "  << hostname\n";
+        // std::cout << hostnames[i] << "  << hostname\n";
         ss.str("");
     }
 
@@ -473,7 +474,11 @@ void displayCB()
     glRotatef(cameraAngleX, 1, 0, 0);
     glRotatef(cameraAngleY, 0, 1, 0);
     glBindTexture(GL_TEXTURE_2D, texId);
+    glDisable(GL_COLOR_MATERIAL);
     sphere2.draw();
+    
+    // glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    // glEnable(GL_COLOR_MATERIAL);
     
     draw_traceroutes ();
     glRotatef(0.1f, 1,0,0);
@@ -544,7 +549,22 @@ void keyboardCB(unsigned char key, int x, int y)
     case ' ':
         sphere2.reverseNormals();
         break;
-
+    case 't':
+        magic_lat += 1;
+        std::cout << "magic_lat: " << magic_lat << '\n';
+        break;
+    case 'y':
+        magic_lat -= 1;
+        std::cout << "magic_lat: " << magic_lat << '\n';
+        break;
+    case 'g':
+        magic_lon += 1;
+        std::cout << "magic_lon: " << magic_lon << '\n';
+        break;
+    case 'h':
+        magic_lon -= 1;
+        std::cout << "magic_lon: " << magic_lon << '\n';
+        break;
     default:
         ;
     }
@@ -612,14 +632,35 @@ void draw_traceroutes(void)
         glColor3f(1, 0, 0);
         
     std::vector<point> points;
+    // std::vector<std::vector<double>> host_coords = \
+    // {
+    //     {40.1774, 44.5263},
+    //     {46.818188, 	8.227512}
+    // };
+        // std::vector<std::vector<double>> host_coords;
+    // double lat_step = 10; // 1 degree step for latitude
+    // double lon_step = 10; // 1 degree step for longitude
+
+    // for (double lat = -90.0; lat <= 90.0; lat += lat_step) {
+    //     for (double lon = -180.0; lon <= 180.0; lon += lon_step) {
+    //         host_coords.push_back({lat, lon});
+    //     }
+    // }
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
     for (auto i = 0; i < host_coords.size(); ++i){
-        point p = to_point(host_coords[i][0], host_coords[i][1]);
+        point p = to_point(host_coords[i][0] + magic_lat, host_coords[i][1] + magic_lon);
+        if(i == 0){
+            glColor3f(0.0, 1.0, 0.0);
+        } else {
+            glColor3f(0.0, 0.0, 1.0);
+        }
         p.draw_point();
         points.push_back(p);
     }
 
-    for (auto i = 0; i < points.size()-1; ++i){
-        draw_curve(draw_bezier_3, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
+    for (auto i = 0; i < points.size() - 1; ++i){
+        draw_curve(draw_quadratic_curve, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
     }
     glEnd();
 
@@ -655,9 +696,11 @@ point to_point(GLfloat latitude, GLfloat longitude, GLfloat altitude, GLfloat ra
 {
     GLfloat latRad = latitude * M_PI / 180.0;
     GLfloat lonRad = longitude * M_PI / 180.0;
-    GLfloat x = (radius + altitude) * cos(latRad) * cos(lonRad);
-    GLfloat y = (radius + altitude) * cos(latRad) * sin(lonRad);
-    GLfloat z = (radius + altitude) * sin(latRad);
+    
+    GLfloat y = cos(latRad) * cos(lonRad);
+    GLfloat x = sin(latRad);
+    GLfloat z = cos(latRad) * sin(lonRad);
+    
     point p(x,y,z);
     p.setcord(latitude, longitude, altitude);
     return p;
@@ -665,16 +708,19 @@ point to_point(GLfloat latitude, GLfloat longitude, GLfloat altitude, GLfloat ra
 
 point get_middlepoint (const point& p1, const point& p2)
 {
-    const GLfloat altMagic = 0.005f;
+    const GLfloat distance = (sqrt(pow(p1.getlat()-p2.getlat(),2) + pow((p1.getlon() - p2.getlon()),2)));
+    const GLfloat altMagic = 0.009 * distance ;
+    double hwy_vec_x = (p1.getx() + p2.getx())/2;
+    double hwy_vec_y = (p1.gety() + p2.gety())/2;
+    double hwy_vec_z = (p1.getz() + p2.getz())/2;
 
-    if (p1.getlat() == 0 || p1.getlon() == 0) {
-        std::cout << "Invalid p1";
-    }
-    if (p2.getlat() == 0 || p2.getlon() == 0) {
-        std::cout << "Invalid p1";
-    }
-     
-    GLfloat latitude = GLfloat ((p1.getlat() + p2.getlat())/2);
-    GLfloat longitude = GLfloat ((p1.getlon() + p2.getlon())/2);
-    return to_point(latitude, longitude, altMagic * (sqrt(pow(p1.getlat()-p2.getlat(),2) + pow((p1.getlon() - p2.getlon()),2))));
+    double magnitude = sqrt(pow(hwy_vec_x,2)+pow(hwy_vec_y,2)+pow(hwy_vec_z,2));
+
+    double hwy_vec_x_unit = hwy_vec_x/magnitude;
+    double hwy_vec_y_unit = hwy_vec_y/magnitude;
+    double hwy_vec_z_unit = hwy_vec_z/magnitude;
+
+    
+    point p_m(hwy_vec_x_unit + altMagic,hwy_vec_y_unit+altMagic,hwy_vec_z_unit);
+    return p_m;
 }
