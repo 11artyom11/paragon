@@ -708,19 +708,11 @@ point to_point(GLfloat latitude, GLfloat longitude, GLfloat altitude, GLfloat ra
 
 point get_middlepoint (const point& p1, const point& p2)
 {
-    const GLfloat distance = (sqrt(pow(p1.getlat()-p2.getlat(),2) + pow((p1.getlon() - p2.getlon()),2)));
-    const GLfloat altMagic = 0.009 * distance ;
-    double hwy_vec_x = (p1.getx() + p2.getx())/2;
-    double hwy_vec_y = (p1.gety() + p2.gety())/2;
-    double hwy_vec_z = (p1.getz() + p2.getz())/2;
-
-    double magnitude = sqrt(pow(hwy_vec_x,2)+pow(hwy_vec_y,2)+pow(hwy_vec_z,2));
-
-    double hwy_vec_x_unit = hwy_vec_x/magnitude;
-    double hwy_vec_y_unit = hwy_vec_y/magnitude;
-    double hwy_vec_z_unit = hwy_vec_z/magnitude;
-
+    const point M ((p2.getx()+p1.getx())/2, (p2.gety()+p1.gety())/2, (p2.getz()+ p1.getz())/2);
     
-    point p_m(hwy_vec_x_unit + altMagic,hwy_vec_y_unit+altMagic,hwy_vec_z_unit);
-    return p_m;
+    /* Distance between origin and M(middlepoint) */
+    GLfloat OM_dist = sqrt(pow(M.getx(),2) + pow(M.gety(),2) + pow(M.getz(),2));
+    const GLfloat MAGIC_MAGNITUDE =  1.2 / OM_dist;
+
+    return point((M.getx()/OM_dist*MAGIC_MAGNITUDE), (M.gety()/OM_dist*MAGIC_MAGNITUDE), (M.getz()/OM_dist*MAGIC_MAGNITUDE));
 }

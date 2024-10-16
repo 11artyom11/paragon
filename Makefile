@@ -14,7 +14,7 @@ VPATH=.
 all: paragon hudini.a
 
 paragon:  main.o hudini.a hipparchus.a rembrandt.a 
-	g++ -o $(PARAGON)  main.o $(HUDINI_DIR)/hudini.a $(HIPPARCHUS_DIR)/hipparchus.a  $(REMBRANDT_DIR)/rembrandt.a  $(HIPPARCHUS_DIR)/lib/libchilkat-9.5.0.a -lglut -lGLU -lGL -lm
+	g++ -o $(PARAGON)  main.o $(HUDINI_DIR)/hudini.a $(HIPPARCHUS_DIR)/hipparchus.a  $(REMBRANDT_DIR)/rembrandt.a  $(HIPPARCHUS_DIR)/lib/libchilkat.a -lglut -lGLU -lGL -lm -ldl -lpthread
 
 hudini.a:
 	cd $(HUDINI_DIR) && $(MAKE) all

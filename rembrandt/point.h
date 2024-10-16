@@ -32,6 +32,7 @@ class point
 
 void draw_curve(painter_func_t painter_cb, const point& p1, const point& p2, const point& p3);
 void draw_quadratic_curve(const point& p1, const point& p2, const point& p3);
+void draw_simple_curve(const point& p1, const point& p2, const point& p3);
 void draw_bezier_3(const point& p1, const point& p2, const point& p3);
 
 #endif /* __POINT_H__ */
