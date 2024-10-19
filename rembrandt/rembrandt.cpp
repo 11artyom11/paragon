@@ -64,9 +64,12 @@ int init_rembrandt_internal(int argc, char **argv, char* strlst[], int strcnt, c
     initGL();
 
     // load BMP image
-    //texId = loadTexture("earth2048.bmp", true);
-    texId = loadTexture("/mnt/spider/paragon/rembrandt/8081_earthmap4k.bmp", true);
-
+    // texId = loadTexture("earth2048.bmp", true);
+    texId = loadTexture("/home/tyom/workspace/paragon/rembrandt/8081_earthmap4k.bmp", true);
+    if (texId == 0) 
+    {
+        return 12;
+    }
     // the last GLUT call (LOOP)
     // window will be shown and display callback is triggered by events
     // NOTE: this call never return main().
@@ -125,13 +128,12 @@ void initGL()
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     //glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_CULL_FACE);
 
     // track material ambient and diffuse from surface color, call it before glEnable(GL_COLOR_MATERIAL)
-    // glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    // glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
 
     glClearColor(0, 0, 0, 0);                   // background color
     glClearStencil(0);                          // clear stencil buffer
@@ -474,7 +476,7 @@ void displayCB()
     glRotatef(cameraAngleX, 1, 0, 0);
     glRotatef(cameraAngleY, 0, 1, 0);
     glBindTexture(GL_TEXTURE_2D, texId);
-    glDisable(GL_COLOR_MATERIAL);
+    // glDisable(GL_COLOR_MATERIAL);
     sphere2.draw();
     
     // glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -487,7 +489,6 @@ void displayCB()
 
     glPopMatrix();
 
-    glBindTexture(GL_TEXTURE_2D, texId);
 
     showInfo();     // print max range of glDrawRangeElements
     
@@ -522,8 +523,8 @@ void keyboardCB(unsigned char key, int x, int y)
         exit(0);
         break;
 
-    case 'd': // switch rendering modes (fill -> wire -> point)
-    case 'D':
+    case 'b': // switch rendering modes (fill -> wire -> point)
+    case 'B':
         ++drawMode;
         drawMode %= 3;
         if(drawMode == 0)        // fill mode
@@ -549,20 +550,20 @@ void keyboardCB(unsigned char key, int x, int y)
     case ' ':
         sphere2.reverseNormals();
         break;
-    case 't':
-        magic_lat += 1;
+    case 'w':
+        magic_lat += 10;
         std::cout << "magic_lat: " << magic_lat << '\n';
         break;
-    case 'y':
-        magic_lat -= 1;
+    case 's':
+        magic_lat -= 10;
         std::cout << "magic_lat: " << magic_lat << '\n';
         break;
-    case 'g':
-        magic_lon += 1;
+    case 'd':
+        magic_lon += 10;
         std::cout << "magic_lon: " << magic_lon << '\n';
         break;
-    case 'h':
-        magic_lon -= 1;
+    case 'a':
+        magic_lon -= 10;
         std::cout << "magic_lon: " << magic_lon << '\n';
         break;
     default:
@@ -632,22 +633,18 @@ void draw_traceroutes(void)
         glColor3f(1, 0, 0);
         
     std::vector<point> points;
-    // std::vector<std::vector<double>> host_coords = \
-    // {
-    //     {40.1774, 44.5263},
-    //     {46.818188, 	8.227512}
-    // };
-        // std::vector<std::vector<double>> host_coords;
-    // double lat_step = 10; // 1 degree step for latitude
-    // double lon_step = 10; // 1 degree step for longitude
 
-    // for (double lat = -90.0; lat <= 90.0; lat += lat_step) {
-    //     for (double lon = -180.0; lon <= 180.0; lon += lon_step) {
-    //         host_coords.push_back({lat, lon});
-    //     }
-    // }
+    std::vector<std::vector<double>> host_coords;
+    double lat_step = 50; // 1 degree step for latitude
+    double lon_step = 50; // 1 degree step for longitude
+    for (double lat = -90.0; lat <= 90.0; lat += lat_step) {
+        for (double lon = -180.0; lon <= 180.0; lon += lon_step) {
+            host_coords.push_back({lat, lon});
+        }
+    }
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     glEnable(GL_COLOR_MATERIAL);
+    glPointSize(0.01f);
     for (auto i = 0; i < host_coords.size(); ++i){
         point p = to_point(host_coords[i][0] + magic_lat, host_coords[i][1] + magic_lon);
         if(i == 0){
@@ -659,9 +656,20 @@ void draw_traceroutes(void)
         points.push_back(p);
     }
 
-    for (auto i = 0; i < points.size() - 1; ++i){
-        draw_curve(draw_quadratic_curve, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
-    }
+    // points.push_back(to_point(37.7749 + magic_lat, -122.4194 + magic_lon)); // San Francisco, USA
+    // points.push_back(to_point(-33.8688, 151.2093)); // Sydney, Australia
+    // points.push_back(to_point(51.5074, -0.1278));   // London, UK
+    // points.push_back(to_point(35.6895, 139.6917));   // Tokyo, Japan
+    // points.push_back(to_point(-23.5505, -46.6333));  // São Paulo, Brazil
+    // points.push_back(to_point(55.7558, 37.6173));    // Moscow, Russia
+    
+    // points.push_back(to_point(0, 0));    // Moscow, Russia
+
+    glColor3f(1.0, 0.0, 0.0);
+
+    // for (auto i = 0; i < points.size() - 1; ++i){
+    //     draw_curve(draw_quadratic_curve, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
+    // }
     glEnd();
 
     glColor3f(1.0, 0.0, 0.0);
@@ -694,13 +702,15 @@ void draw_string_stack(char* strlst[], int strcnt)
 
 point to_point(GLfloat latitude, GLfloat longitude, GLfloat altitude, GLfloat radius)
 {
-    GLfloat latRad = latitude * M_PI / 180.0;
-    GLfloat lonRad = longitude * M_PI / 180.0;
     
-    GLfloat y = cos(latRad) * cos(lonRad);
-    GLfloat x = sin(latRad);
-    GLfloat z = cos(latRad) * sin(lonRad);
-    
+    GLfloat y = 0;
+    GLfloat x = 0;
+    GLfloat z = 0;
+    x = (4 * longitude) / (longitude * longitude + latitude * latitude + 4);
+    z = pow((1-(2*x)/longitude), 2);
+    y = (x*latitude)/longitude;
+
+    std::cout << " ->>> x : " << x << " y : " << y << " z : " << z << std::endl;
     point p(x,y,z);
     p.setcord(latitude, longitude, altitude);
     return p;
@@ -711,7 +721,8 @@ point get_middlepoint (const point& p1, const point& p2)
     const point M ((p2.getx()+p1.getx())/2, (p2.gety()+p1.gety())/2, (p2.getz()+ p1.getz())/2);
     
     /* Distance between origin and M(middlepoint) */
-    GLfloat OM_dist = sqrt(pow(M.getx(),2) + pow(M.gety(),2) + pow(M.getz(),2));
+    GLfloat OM_dist = sqrt(pow(M.getx(),2) + pow(M.gety(),2) + pow(M.getz(),2)) + 0.0001;
+    /* The less the distance OM, means that points are further on the surface, thus magnitude needs to be bigger */
     const GLfloat MAGIC_MAGNITUDE =  1.2 / OM_dist;
 
     return point((M.getx()/OM_dist*MAGIC_MAGNITUDE), (M.gety()/OM_dist*MAGIC_MAGNITUDE), (M.getz()/OM_dist*MAGIC_MAGNITUDE));
