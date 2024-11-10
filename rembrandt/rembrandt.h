@@ -5,6 +5,12 @@
 #include "point.h"
 #include <vector>
 
+/* 
+    If set close **CONSEQUENT** distances are approximated to one
+ */
+constexpr bool approximatePoints = 1;
+constexpr GLfloat minDistance = 0.1;
+
 void displayCB();
 void reshapeCB(int w, int h);
 void timerCB(int millisec);

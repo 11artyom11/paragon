@@ -18,7 +18,7 @@ class point
         GLfloat getlat() const {return lat;};
         GLfloat getlon() const {return lon;};
         GLfloat getalt() const {return alt;};
-
+        GLfloat distance(const point& p) const;
 
         void setcord (GLfloat lat, GLfloat lon, GLfloat alt) {this->lat = lat; this->lon = lon; this->alt = alt;};
     private:

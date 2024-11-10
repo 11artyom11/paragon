@@ -19,6 +19,11 @@ void point::draw_point(void)
         glVertex3f(x,y,z);
 }
 
+GLfloat point::distance(const point& p) const 
+{
+    return  sqrt(pow((this->x-p.x),2) + pow((this->y-p.y),2) + pow((this->z-p.z),2));
+}
+
 void draw_bezier_3(const point& p1, const point& p2, const point& p3)
 {
     glBegin(GL_LINE_STRIP);
@@ -36,9 +41,8 @@ void draw_bezier_3(const point& p1, const point& p2, const point& p3)
 }
 
 void draw_quadratic_curve(const point& p1, const point& p2, const point& p3) {
-    glBegin(GL_LINE_STRIP);
     for (GLfloat i = 0; i <= anim; ++i) {
-        if (anim < 100) anim += 0.002f;
+        if (anim < 100) anim += 0.01f;
         float t = (float)i / 100.0;
         float u = 1 - t;
         float tt = t * t;
@@ -50,10 +54,13 @@ void draw_quadratic_curve(const point& p1, const point& p2, const point& p3) {
 
         glVertex3f(x, y, z);
     }
-    glEnd();
 }
 
 void draw_curve(painter_func_t painter_cb, const point& p1, const point& p2, const point& p3)
 {
-    return painter_cb(p1,p2,p3);
+    glBegin(GL_LINE_STRIP);
+    glColor3f(1.0, 1.0, 1.0);
+    glPointSize(1.0f);
+    painter_cb(p1,p2,p3);
+    return glEnd();
 }

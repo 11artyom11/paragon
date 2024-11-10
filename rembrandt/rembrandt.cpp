@@ -40,9 +40,8 @@ sphere sphere2(1.0f, 36*2, 18*2, true,  2);    // radius, sectors, stacks, smoot
 std::string hostnames[30]; /* Magic 30 */
 std::vector<std::vector<double>> host_coords;
 int hostname_count;
-int magic_lat = -186;
-int magic_lon = 176;
-
+int magic_lat = 0;
+int magic_lon = 0;
 ///////////////////////////////////////////////////////////////////////////////
 int init_rembrandt_internal(int argc, char **argv, char* strlst[], int strcnt, const std::vector<std::vector<double>>& host_c)
 {
@@ -628,51 +627,67 @@ void mouseMotionCB(int x, int y)
 void draw_traceroutes(void)
 {
 
-        glPointSize(10.0);
     glBegin(GL_POINTS);
-        glColor3f(1, 0, 0);
+    glColor3f(1, 0, 0);
         
     std::vector<point> points;
 
-    std::vector<std::vector<double>> host_coords;
-    double lat_step = 50; // 1 degree step for latitude
-    double lon_step = 50; // 1 degree step for longitude
-    for (double lat = -90.0; lat <= 90.0; lat += lat_step) {
-        for (double lon = -180.0; lon <= 180.0; lon += lon_step) {
-            host_coords.push_back({lat, lon});
-        }
-    }
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
-    glPointSize(0.01f);
+    // std::vector<std::vector<double>> host_coords;
+    // double lat_step = 20; // 1 degree step for latitude
+    // double lon_step = 20; // 1 degree step for longitude
+    // for (double lat = -90.0; lat <= 90.0; lat += lat_step) {
+    //     for (double lon = -180.0; lon <= 180.0; lon += lon_step) {
+    //         host_coords.push_back({lat, lon});
+    //     }
+    // }
+    // glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    // glEnable(GL_COLOR_MATERIAL);
+    // glPointSize(1.0f);
     for (auto i = 0; i < host_coords.size(); ++i){
         point p = to_point(host_coords[i][0] + magic_lat, host_coords[i][1] + magic_lon);
-        if(i == 0){
+        if(host_coords[i][0] == 0 && host_coords[i][1] == 0){
+            continue;
+        } 
+
+        if (points.size() >= 1) {
+            point last_point = points.back();
+            if constexpr (approximatePoints) {
+                /* If current point is close enough to its former point, skip -- approximate */
+                std::cout << last_point.distance(p) << " <<<<<<< DISTANCE\n";
+                if (last_point.distance(p) < minDistance) {
+                    continue;
+                }
+            }
+        }
+        points.push_back(p);
+    }
+    
+    { /* TEST Points */
+        // points.push_back(to_point(40.1772 + magic_lat, 44.526 + magic_lon));    // Armenia
+        // points.push_back(to_point(40.3772 + magic_lat, 44.226 + magic_lon));    // Armenia
+        // points.push_back(to_point(60.1699 + magic_lat, 24.9384 + magic_lon));   // Finland
+        // points.push_back(to_point(35.694 + magic_lat, 139.754 + magic_lon));    // Japan
+        // points.push_back(to_point(52.2297 + magic_lat, 21.0122 + magic_lon));   // Poland
+        // points.push_back(to_point(52.3759 + magic_lat, 4.8975 + magic_lon));    // The Netherlands
+        // points.push_back(to_point(52.3676 + magic_lat, 4.90414 + magic_lon));   // The Netherlands (alternative coordinate)
+        // points.push_back(to_point(40.7128 + magic_lat, -74.006 + magic_lon));   // United States (New York)
+    }
+
+    for (auto i = 0; i < points.size(); i++) {
+        if (i == 0) {
+            glPointSize(10.0f);
             glColor3f(0.0, 1.0, 0.0);
         } else {
             glColor3f(0.0, 0.0, 1.0);
         }
-        p.draw_point();
-        points.push_back(p);
-    }
+        points[i].draw_point();
+    } 
 
-    // points.push_back(to_point(37.7749 + magic_lat, -122.4194 + magic_lon)); // San Francisco, USA
-    // points.push_back(to_point(-33.8688, 151.2093)); // Sydney, Australia
-    // points.push_back(to_point(51.5074, -0.1278));   // London, UK
-    // points.push_back(to_point(35.6895, 139.6917));   // Tokyo, Japan
-    // points.push_back(to_point(-23.5505, -46.6333));  // São Paulo, Brazil
-    // points.push_back(to_point(55.7558, 37.6173));    // Moscow, Russia
-    
-    // points.push_back(to_point(0, 0));    // Moscow, Russia
-
-    glColor3f(1.0, 0.0, 0.0);
-
-    // for (auto i = 0; i < points.size() - 1; ++i){
-    //     draw_curve(draw_quadratic_curve, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
-    // }
     glEnd();
 
-    glColor3f(1.0, 0.0, 0.0);
+    for (auto i = 0; i < points.size() - 1; ++i){
+        draw_curve(draw_quadratic_curve, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
+    }
 }
 
 void draw_string_stack(char* strlst[], int strcnt)
@@ -703,15 +718,20 @@ void draw_string_stack(char* strlst[], int strcnt)
 point to_point(GLfloat latitude, GLfloat longitude, GLfloat altitude, GLfloat radius)
 {
     
-    GLfloat y = 0;
-    GLfloat x = 0;
-    GLfloat z = 0;
-    x = (4 * longitude) / (longitude * longitude + latitude * latitude + 4);
-    z = pow((1-(2*x)/longitude), 2);
-    y = (x*latitude)/longitude;
+    GLfloat latRad = latitude * M_PI / 180.0;
+    GLfloat lonRad = longitude * M_PI / 180.0;
+    
+    GLfloat y = cos(latRad) * cos(lonRad);
+    GLfloat x = sin(latRad);
+    GLfloat z = cos(latRad) * sin(lonRad);
+    
 
-    std::cout << " ->>> x : " << x << " y : " << y << " z : " << z << std::endl;
-    point p(x,y,z);
+
+    GLfloat theta = M_PI / 2; /* Need to rotate 90 degrees */
+    GLfloat x_rotated = x * cos(theta) - y * sin(theta);
+    GLfloat y_rotated = x * sin(theta) + y * cos(theta);
+
+    point p(x_rotated, y_rotated, z);
     p.setcord(latitude, longitude, altitude);
     return p;
 }
@@ -723,7 +743,7 @@ point get_middlepoint (const point& p1, const point& p2)
     /* Distance between origin and M(middlepoint) */
     GLfloat OM_dist = sqrt(pow(M.getx(),2) + pow(M.gety(),2) + pow(M.getz(),2)) + 0.0001;
     /* The less the distance OM, means that points are further on the surface, thus magnitude needs to be bigger */
-    const GLfloat MAGIC_MAGNITUDE =  1.2 / OM_dist;
-
+    const GLfloat MAGIC_MAGNITUDE =  (2+(0.2/OM_dist)) - (OM_dist);
+    std::cout << "MAGIC MAGNITUDE ><>>>><>><>>>> " << MAGIC_MAGNITUDE << "\n";
     return point((M.getx()/OM_dist*MAGIC_MAGNITUDE), (M.gety()/OM_dist*MAGIC_MAGNITUDE), (M.getz()/OM_dist*MAGIC_MAGNITUDE));
 }
