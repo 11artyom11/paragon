@@ -249,7 +249,7 @@ void initLights()
     glLightfv(GL_LIGHT0, GL_SPECULAR, lightKs);
 
     // position the light
-    float lightPos[4] = {0, 0, 1, 0}; // directional light
+    float lightPos[4] = {1, 1, 1, 1}; // directional light
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
     glEnable(GL_LIGHT0);                        // MUST enable each light source after configuration
