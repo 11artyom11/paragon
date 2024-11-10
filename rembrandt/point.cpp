@@ -95,7 +95,7 @@ void draw_curve(painter_func_t painter_cb, const point& p1, const point& p2, con
 {
     glBegin(GL_LINE_STRIP);
     glColor3f(1.0, 1.0, 1.0);
-    glPointSize(1.0f);
+    glPointSize(2.0f);
     painter_cb(p1,p2,p3);
     return glEnd();
 }

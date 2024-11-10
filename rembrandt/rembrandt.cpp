@@ -38,22 +38,23 @@ int imageWidth;
 int imageHeight;
 sphere sphere2(1.0f, 36*2, 18*2, true,  2);    // radius, sectors, stacks, smooth(default), Y-up
 std::string hostnames[30]; /* Magic 30 */
-std::vector<std::vector<double>> host_coords;
+std::vector<host> hosts;
+
 int hostname_count;
 int magic_lat = 0;
 int magic_lon = 0;
 ///////////////////////////////////////////////////////////////////////////////
-int init_rembrandt_internal(int argc, char **argv, char* strlst[], int strcnt, const std::vector<std::vector<double>>& host_c)
+int init_rembrandt_internal(int argc, char **argv, char* strlst[], int strcnt, const std::vector<host>& host_c)
 {
     hostname_count = strcnt;
+    hosts = host_c;
     std::cout << "[RMBRDT] hostnames\n";
     for (int i = 0; i < hostname_count; i++) {
         hostnames[i] = strlst[i];
-        host_coords.push_back({host_c[i][0], host_c[i][1]});
-        
         std::cout << "hostname["<<i<<"] : " << hostnames[i] << "\n";
-        std::cout << "coordinates["<<i<<"][0] : " << host_coords[i][0] << "\n";
-        std::cout << "coordinates["<<i<<"][1] : " << host_coords[i][1] << "\n";
+        std::cout << "city ["<<i<<"] : " << hosts[i].city << "\n";
+        std::cout << "coordinates["<<i<<"][lat] : " << hosts[i].host_coordinates.first << "\n";
+        std::cout << "coordinates["<<i<<"][lon] : " << hosts[i].host_coordinates.second << "\n";
     }
     // init global vars
     initSharedMem();
@@ -631,10 +632,10 @@ void draw_traceroutes(void)
         
     std::vector<point> points;
     std::unordered_map<std::string, point> map;
-
-    for (auto i = 0; i < host_coords.size(); ++i){
-        point p = to_point(host_coords[i][0] + magic_lat, host_coords[i][1] + magic_lon);
-        if(host_coords[i][0] == 0 && host_coords[i][1] == 0){
+    int city_count = 0;
+    for (auto i = 0; i < hosts.size(); ++i){
+        point p = to_point(hosts[i].host_coordinates.first + magic_lat, hosts[i].host_coordinates.second + magic_lon);
+        if(hosts[i].host_coordinates.first == 0 && hosts[i].host_coordinates.second == 0){
             continue;
         } 
 
@@ -648,7 +649,8 @@ void draw_traceroutes(void)
             }
         }
         points.push_back(p);
-        map["Yerevan"] = p;
+        std::cout << "city_count :" << i << "| " << "name : " << hosts[i].city << "\n";
+        map[hosts[i].city] = p;
     }
     
     { /* TEST Points */
@@ -672,7 +674,10 @@ void draw_traceroutes(void)
         points[i].draw_point();
     } 
 
+
     glEnd();
+
+    pinCities(map);
 
     for (auto i = 0; i < points.size() - 1; ++i){
         draw_curve(draw_quadratic_curve, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
@@ -738,5 +743,9 @@ point get_middlepoint (const point& p1, const point& p2)
 
 void pinCities(const std::unordered_map<std::string, point>& map)
 {
-
+    float color[4] = {1, 1, 1, 1};
+    for (const auto &i : map) {
+        float pos[] = {i.second.getx(), i.second.gety(), i.second.getz() + 0.04};
+        drawString3D(i.first.c_str(), pos, color, font);
+    }
 }

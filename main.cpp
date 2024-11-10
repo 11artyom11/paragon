@@ -12,9 +12,10 @@ extern "C" {
 #include <arpa/inet.h>
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 static i8 *hostnames[MAX_HOPS];
-static std::vector<std::vector<double>> host_coords;
+static std::vector<host> hosts;
 static u32 hostname_count;
 
 u32 init_hudini(u32 argc, i8* argv[], struct _hudini_udp_ctx** uctx, struct _hudini_icmp_ctx** ictx);
@@ -63,7 +64,10 @@ int main(int argc, char* argv[])
         std::string lon = node->get_json_val("lon");
         double latd = atof(lat.c_str());
         double lond = atof(lon.c_str());
-        host_coords.push_back({latd,lond});
+        host h;
+        h.host_coordinates = {latd,lond};
+        h.city = node->get_json_val("country");
+        hosts.push_back(h);
     }
 
     hip.dump_hostnodes();
@@ -163,7 +167,7 @@ u32 to_hostname (struct in_addr* addr, char* hostname)
 u32 init_rembrandt(int argc, char **argv)
 {
 
-    init_rembrandt_internal(argc, argv, hostnames, hostname_count, host_coords);
+    init_rembrandt_internal(argc, argv, hostnames, hostname_count, hosts);
 
     return PARAGON_SUCC;
 }
