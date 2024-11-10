@@ -4,6 +4,8 @@
 #include <GL/glut.h>
 #include "point.h"
 #include <vector>
+#include <unordered_map>
+#include <string>
 
 /* 
     If set close **CONSEQUENT** distances are approximated to one
@@ -36,6 +38,7 @@ void draw_string_stack(char* strlst[], int strcnt);
 
 point to_point(GLfloat latitude, GLfloat longitude, GLfloat altitude = 0.0f, GLfloat radius = 1.0f);
 point get_middlepoint (const point& p1, const point& p2);
+void pinCities(const std::unordered_map<std::string, point>& map);
 
 // sphere: min sector = 3, min stack = 2
 

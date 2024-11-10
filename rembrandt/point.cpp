@@ -6,12 +6,47 @@
 
 static GLfloat anim = 0.1f;
 
-point::point (GLfloat x, GLfloat y, GLfloat z):
-        x{x},
-        y{y},
-        z{z}
-{
-        // std::cout << "called point ctor\n";
+point::point() : x{0}, y{0}, z{0} {
+    // std::cout << "Default constructor called\n";
+}
+
+point::point(GLfloat x, GLfloat y, GLfloat z) : x{x}, y{y}, z{z} {
+    // std::cout << "Parameterized constructor called\n";
+}
+
+point::point(const point& other) : x{other.x}, y{other.y}, z{other.z} {
+    // std::cout << "Copy constructor called\n";
+}
+
+point::point(point&& other) noexcept : x{other.x}, y{other.y}, z{other.z} {
+    other.x = other.y = other.z = 0;  // Optional: set other to a default state
+    // std::cout << "Move constructor called\n";
+}
+
+point& point::operator=(const point& other) {
+    if (this != &other) {  // Self-assignment check
+        x = other.x;
+        y = other.y;
+        z = other.z;
+        // std::cout << "Copy assignment operator called\n";
+    }
+    return *this;
+}
+
+point& point::operator=(point&& other) noexcept {
+    if (this != &other) {  // Self-assignment check
+        x = other.x;
+        y = other.y;
+        z = other.z;
+        other.x = other.y = other.z = 0;  // Optional: set other to a default state
+        // std::cout << "Move assignment operator called\n";
+    }
+    return *this;
+}
+
+// Destructor
+point::~point() {
+    // std::cout << "Destructor called\n";
 }
 
 void point::draw_point(void)

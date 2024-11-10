@@ -483,7 +483,6 @@ void displayCB()
     
     draw_traceroutes ();
     glRotatef(0.1f, 1,0,0);
-    glColor3f(0, 0.3, 0);
     glPointSize(3.0);
 
     glPopMatrix();
@@ -631,18 +630,8 @@ void draw_traceroutes(void)
     glColor3f(1, 0, 0);
         
     std::vector<point> points;
+    std::unordered_map<std::string, point> map;
 
-    // std::vector<std::vector<double>> host_coords;
-    // double lat_step = 20; // 1 degree step for latitude
-    // double lon_step = 20; // 1 degree step for longitude
-    // for (double lat = -90.0; lat <= 90.0; lat += lat_step) {
-    //     for (double lon = -180.0; lon <= 180.0; lon += lon_step) {
-    //         host_coords.push_back({lat, lon});
-    //     }
-    // }
-    // glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    // glEnable(GL_COLOR_MATERIAL);
-    // glPointSize(1.0f);
     for (auto i = 0; i < host_coords.size(); ++i){
         point p = to_point(host_coords[i][0] + magic_lat, host_coords[i][1] + magic_lon);
         if(host_coords[i][0] == 0 && host_coords[i][1] == 0){
@@ -653,13 +642,13 @@ void draw_traceroutes(void)
             point last_point = points.back();
             if constexpr (approximatePoints) {
                 /* If current point is close enough to its former point, skip -- approximate */
-                std::cout << last_point.distance(p) << " <<<<<<< DISTANCE\n";
                 if (last_point.distance(p) < minDistance) {
                     continue;
                 }
             }
         }
         points.push_back(p);
+        map["Yerevan"] = p;
     }
     
     { /* TEST Points */
@@ -744,6 +733,10 @@ point get_middlepoint (const point& p1, const point& p2)
     GLfloat OM_dist = sqrt(pow(M.getx(),2) + pow(M.gety(),2) + pow(M.getz(),2)) + 0.0001;
     /* The less the distance OM, means that points are further on the surface, thus magnitude needs to be bigger */
     const GLfloat MAGIC_MAGNITUDE =  (2+(0.2/OM_dist)) - (OM_dist);
-    std::cout << "MAGIC MAGNITUDE ><>>>><>><>>>> " << MAGIC_MAGNITUDE << "\n";
     return point((M.getx()/OM_dist*MAGIC_MAGNITUDE), (M.gety()/OM_dist*MAGIC_MAGNITUDE), (M.getz()/OM_dist*MAGIC_MAGNITUDE));
+}
+
+void pinCities(const std::unordered_map<std::string, point>& map)
+{
+
 }
