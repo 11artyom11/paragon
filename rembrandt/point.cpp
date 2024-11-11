@@ -75,27 +75,22 @@ void draw_bezier_3(const point& p1, const point& p2, const point& p3)
     glEnd();
 }
 
-void draw_quadratic_curve(const point& p1, const point& p2, const point& p3) {
-    for (GLfloat i = 0; i <= anim; ++i) {
-        if (anim < 100) anim += 0.01f;
-        float t = (float)i / 100.0;
-        float u = 1 - t;
-        float tt = t * t;
-        float uu = u * u;
-
-        float x = uu * p1.getx() + 2 * u * t * p2.getx() + tt * p3.getx();
-        float y = uu * p1.gety() + 2 * u * t * p2.gety() + tt * p3.gety();
-        float z = uu * p1.getz() + 2 * u * t * p2.getz() + tt * p3.getz();
-
+void draw_quadratic_curve(const point& p1, const point& p2, const point& p3, float progress) {
+    int numPoints = 50;
+    for (int i = 0; i <= numPoints * progress; ++i) {
+        float t = i / static_cast<float>(numPoints);
+        float x = (1 - t) * (1 - t) * p1.getx() + 2 * (1 - t) * t * p2.getx() + t * t * p3.getx();
+        float y = (1 - t) * (1 - t) * p1.gety() + 2 * (1 - t) * t * p2.gety() + t * t * p3.gety();
+        float z = (1 - t) * (1 - t) * p1.getz() + 2 * (1 - t) * t * p2.getz() + t * t * p3.getz();
         glVertex3f(x, y, z);
     }
 }
 
-void draw_curve(painter_func_t painter_cb, const point& p1, const point& p2, const point& p3)
+void draw_curve(painter_func_t painter_cb, const point& p1, const point& p2, const point& p3, float progress)
 {
     glBegin(GL_LINE_STRIP);
-    glColor3f(1.0, 1.0, 1.0);
+    glColor3f(1.0/progress, 1.0/progress, 1.0/progress);
     glPointSize(2.0f);
-    painter_cb(p1,p2,p3);
+    painter_cb(p1,p2,p3,progress);
     return glEnd();
 }

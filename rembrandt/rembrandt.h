@@ -25,6 +25,7 @@ void timerCB(int millisec);
 void keyboardCB(unsigned char key, int x, int y);
 void mouseCB(int button, int stat, int x, int y);
 void mouseMotionCB(int x, int y);
+void update_progress();
 
 void initGL();
 int  initGLUT(int argc, char **argv);

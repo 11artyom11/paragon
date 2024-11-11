@@ -9,6 +9,7 @@
 #include <cmath>
 #include <time.h>
 #include <unistd.h>
+#include <chrono>
 #include "bmp.h"
 #include "sphere.h"
 #include "point.h"
@@ -108,7 +109,7 @@ int initGLUT(int argc, char **argv)
     glutKeyboardFunc(keyboardCB);
     glutMouseFunc(mouseCB);
     glutMotionFunc(mouseMotionCB);
-
+    glutIdleFunc(update_progress);
     return handle;
 }
 
@@ -623,6 +624,35 @@ void mouseMotionCB(int x, int y)
         mouseY = y;
     }
 }
+std::vector<point> points;
+int currentSegment = 0;      // Index of the current segment being drawn
+float progress = 0.0f;       // Progress of the current segment (0.0 to 1.0)
+const float segmentDuration = 1.0f; // Duration to draw each segment in seconds
+
+auto lastTime = std::chrono::high_resolution_clock::now(); // Track time
+
+
+void update_progress() {
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+
+    // Update the progress for the current segment
+    progress += deltaTime / segmentDuration;
+
+    // Check if we need to move to the next segment
+    if (progress >= 1.0f) {
+        progress = 0.0f;
+        currentSegment++;
+
+        // Reset if all segments are drawn
+        if (currentSegment >= points.size() - 1) {
+            currentSegment = 0;  // Loop the animation
+        }
+    }
+
+    lastTime = currentTime;
+    glutPostRedisplay();
+}
 
 void draw_traceroutes(void)
 {
@@ -630,7 +660,6 @@ void draw_traceroutes(void)
     glBegin(GL_POINTS);
     glColor3f(1, 0, 0);
         
-    std::vector<point> points;
     std::unordered_map<std::string, point> map;
     int city_count = 0;
     for (auto i = 0; i < hosts.size(); ++i){
@@ -679,8 +708,26 @@ void draw_traceroutes(void)
 
     pinCities(map);
 
-    for (auto i = 0; i < points.size() - 1; ++i){
-        draw_curve(draw_quadratic_curve, points[i], get_middlepoint(points[i], points[i+1]), points[i+1]);
+    for (int i = 0; i < currentSegment; ++i) {
+        point p1 = points[i];
+        point p2 = get_middlepoint(points[i], points[i + 1]);
+        point p3 = points[i + 1];
+
+        glBegin(GL_LINE_STRIP);
+        glColor3f(1.0, 1.0, 1.0);
+        draw_quadratic_curve(p1, p2, p3, 1.0f); // Draw full curve for completed segments
+        glEnd();
+    }
+
+    if (currentSegment < points.size() - 1) {
+        point p1 = points[currentSegment];
+        point p2 = get_middlepoint(points[currentSegment], points[currentSegment + 1]);
+        point p3 = points[currentSegment + 1];
+
+        glBegin(GL_LINE_STRIP);
+        glColor3f(1.0, 1.0, 1.0);
+        draw_curve(draw_quadratic_curve, p1, p2, p3, progress); // Animate only the current segment
+        glEnd();
     }
 }
 

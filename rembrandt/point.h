@@ -5,12 +5,12 @@
 
 class point;
 
-typedef void(*painter_func_t)(const point& p1, const point& p2, const point& p3);
+typedef void(*painter_func_t)(const point& p1, const point& p2, const point& p3, float progress);
 
 class point 
 {
     public:
-    
+
         point();
         point (GLfloat x, GLfloat y, GLfloat z);
         point(const point& other);
@@ -39,8 +39,8 @@ class point
         GLfloat alt;
 };
 
-void draw_curve(painter_func_t painter_cb, const point& p1, const point& p2, const point& p3);
-void draw_quadratic_curve(const point& p1, const point& p2, const point& p3);
+void draw_curve(painter_func_t painter_cb, const point& p1, const point& p2, const point& p3, float progress);
+void draw_quadratic_curve(const point& p1, const point& p2, const point& p3, float progress);
 void draw_simple_curve(const point& p1, const point& p2, const point& p3);
 void draw_bezier_3(const point& p1, const point& p2, const point& p3);
 
